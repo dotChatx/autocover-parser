@@ -2,6 +2,11 @@ const express = require('express');
 const Mercury = require('@postlight/mercury-parser');
 const app = express();
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
+
 app.get('/parser', async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).send({ error: 'Missing URL' });
