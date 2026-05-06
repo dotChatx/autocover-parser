@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF to JPG Converter</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; max-width: 800px; }
+    button { padding: 0.6rem 1rem; }
+    .result { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>PDF → JPG Converter</h1>
+  <p>Upload a PDF. The app extracts embedded JPEG streams and saves them as JPG files.</p>
+
+  <input id="pdf" type="file" accept="application/pdf" />
+  <button id="convert">Convert</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    const btn = document.getElementById('convert');
+    const input = document.getElementById('pdf');
+    const result = document.getElementById('result');
+
+    btn.addEventListener('click', async () => {
+      if (!input.files.length) {
+        result.textContent = 'Please choose a PDF file first.';
+        return;
+      }
+
+      const file = input.files[0];
+      result.textContent = 'Converting...';
+
+      try {
+        const response = await fetch('/convert/pdf-to-jpg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/pdf' },
+          body: await file.arrayBuffer()
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          result.textContent = data.error || 'Conversion failed.';
+          return;
+        }
+
+        result.innerHTML = `\n          <p><strong>Converted ${data.count} image(s).</strong></p>\n          <ul>${data.files.map((f) => `<li><a href="${f.url}" target="_blank">${f.filename}</a></li>`).join('')}</ul>\n        `;
+      } catch (err) {
+        result.textContent = `Error: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
